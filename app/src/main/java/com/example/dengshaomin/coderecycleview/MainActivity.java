@@ -1,19 +1,15 @@
 package com.example.dengshaomin.coderecycleview;
 
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.OrientationHelper;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.andview.refreshview.XRefreshView;
+import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecycleView;
+import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecyclerViewFooter;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CommonAdapter;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.HeaderAndFooterWrapper;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.ViewHolder;
@@ -23,7 +19,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    RecyclerView recycleView;
+    CodeRecycleView coderecycleView;
     CommonAdapter<String> commonAdapter;
     List<String> datas = new ArrayList<>();
     HeaderAndFooterWrapper<String> headerAndFooterWrapper;
@@ -32,10 +28,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        recycleView = (RecyclerView) findViewById(R.id.recycleView);
-        recycleView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST, getResources
+        coderecycleView = (CodeRecycleView) findViewById(R.id.coderecycleView);
+        coderecycleView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST, getResources
                 ().getColor(R.color.cardview_dark_background), 1));
-        recycleView.setLayoutManager(new GridLayoutManager(this, 3));
+//        coderecycleView.setRefreshMode(CodeRecycleView.START);
+//        coderecycleView.setSpringBackMode(CodeRecycleView.NONE);
+        coderecycleView.setLayoutManager(new LinearLayoutManager(this));
         if (commonAdapter == null) {
             commonAdapter = new CommonAdapter<String>(MainActivity.this, R.layout.item_view, datas) {
                 @Override
@@ -47,17 +45,38 @@ public class MainActivity extends AppCompatActivity {
         }
         headerAndFooterWrapper = new HeaderAndFooterWrapper<>(commonAdapter);
         initHeaderFoot();
-        recycleView.setAdapter(headerAndFooterWrapper);
-        new Handler().postDelayed(new Runnable() {
+        coderecycleView.setAdapter(headerAndFooterWrapper);
+
+        coderecycleView.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
-            public void run() {
-                if (datas == null) datas = new ArrayList<String>();
-                for (int i = 0; i < 50; i++) {
-                    datas.add(i + "");
-                }
-                headerAndFooterWrapper.notifyDataSetChanged();
+            public void onRefresh(boolean isPullDown) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (datas == null) datas = new ArrayList<String>();
+                        datas.clear();
+                        for (int i = 0; i < 10; i++) {
+                            datas.add(i + "");
+                        }
+                        coderecycleView.refreshComplete(CodeRecycleView.SUCCESS);
+                    }
+                }, 3000);
             }
-        }, 3000);
+
+            @Override
+            public void onLoadMore(boolean isSilence) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (datas == null) datas = new ArrayList<String>();
+                        for (int i = 0; i < 10; i++) {
+                            datas.add(i + "");
+                        }
+                        coderecycleView.refreshComplete(CodeRecycleView.SUCCESS);
+                    }
+                }, 3000);
+            }
+        });
     }
 
 
@@ -72,6 +91,6 @@ public class MainActivity extends AppCompatActivity {
         textView1.setPadding(10, 10, 10, 10);
         textView1.setText("foot1");
         headerAndFooterWrapper.addHeaderView(textView);
-        headerAndFooterWrapper.addFootView(textView1);
+        headerAndFooterWrapper.addFootView(new CodeRecyclerViewFooter(MainActivity.this));
     }
 }

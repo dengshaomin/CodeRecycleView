@@ -7,10 +7,8 @@
     android:layout_height="match_parent"
     tools:context="com.example.dengshaomin.coderecycleview.MainActivity">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycleView"
+    <com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecycleView
+        android:id="@+id/coderecycleView"
         android:layout_width="match_parent"
-
         android:layout_height="match_parent"/>
-
 </LinearLayout>
