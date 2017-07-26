@@ -129,7 +129,7 @@ public class XRefreshContentView implements OnScrollListener, OnTopRefreshTime, 
                     if (scrollState == SCROLL_STATE_IDLE && arriveBottom) {
                         if (mSilenceLoadMore) {
                             if (mRefreshViewListener != null) {
-                                mRefreshViewListener.onLoadMore(true);
+                                mRefreshViewListener.onLoadMore(true,0);
                             }
                         } else if (mContainer != null && !hasLoadCompleted()) {
                             mContainer.invokeLoadMore();
@@ -268,7 +268,7 @@ public class XRefreshContentView implements OnScrollListener, OnTopRefreshTime, 
         if (!mIsLoadingMore && isOnRecyclerViewBottom() && !hasLoadCompleted()) {
             if (mRefreshViewListener != null) {
                 mIsLoadingMore = true;
-                mRefreshViewListener.onLoadMore(true);
+                mRefreshViewListener.onLoadMore(true,0);
             }
         }
     }
@@ -310,7 +310,7 @@ public class XRefreshContentView implements OnScrollListener, OnTopRefreshTime, 
             mFooterCallBack.onStateRefreshing();
             setState(XRefreshViewState.STATE_LOADING);
             if (mRefreshViewListener != null) {
-                mRefreshViewListener.onLoadMore(silence);
+                mRefreshViewListener.onLoadMore(silence,0);
             }
         } else {
             loadCompleted();
@@ -321,7 +321,7 @@ public class XRefreshContentView implements OnScrollListener, OnTopRefreshTime, 
         if (!mIsLoadingMore) {
             if (!hasLoadCompleted()) {
                 if (mRefreshViewListener != null) {
-                    mRefreshViewListener.onLoadMore(false);
+                    mRefreshViewListener.onLoadMore(false,0);
                 }
                 mIsLoadingMore = true;
                 previousTotal = mTotalItemCount;
@@ -737,7 +737,7 @@ public class XRefreshContentView implements OnScrollListener, OnTopRefreshTime, 
         /******解决abslistview数据不满一屏的时候，会重复加载更多的问题 end ******/
         if (mSilenceLoadMore) {
             if (mRefreshViewListener != null && !hasLoadCompleted() && !mIsLoadingMore && mTotalItemCount - 1 <= view.getLastVisiblePosition() + mPreLoadCount) {
-                mRefreshViewListener.onLoadMore(true);
+                mRefreshViewListener.onLoadMore(true,0);
                 mIsLoadingMore = true;
             }
         } else if (mContainer != null && !hasLoadCompleted()

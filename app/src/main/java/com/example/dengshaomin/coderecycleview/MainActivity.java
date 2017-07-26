@@ -31,8 +31,6 @@ public class MainActivity extends AppCompatActivity {
         coderecycleView = (CodeRecycleView) findViewById(R.id.coderecycleView);
         coderecycleView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST, getResources
                 ().getColor(R.color.cardview_dark_background), 1));
-//        coderecycleView.setRefreshMode(CodeRecycleView.START);
-//        coderecycleView.setSpringBackMode(CodeRecycleView.NONE);
         coderecycleView.setLayoutManager(new LinearLayoutManager(this));
         if (commonAdapter == null) {
             commonAdapter = new CommonAdapter<String>(MainActivity.this, R.layout.item_view, datas) {
@@ -64,13 +62,14 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
+            public void onLoadMore(boolean isSilence, final int index) {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (datas == null) datas = new ArrayList<String>();
-                        for (int i = 0; i < 10; i++) {
-                            datas.add(i + "");
+                        int size = datas.size();
+                        for (int i = 0; i < (index == 3 ? 9 : 10); i++) {
+                            datas.add((size + i) + "");
                         }
                         coderecycleView.refreshComplete(CodeRecycleView.SUCCESS);
                     }
@@ -91,6 +90,6 @@ public class MainActivity extends AppCompatActivity {
         textView1.setPadding(10, 10, 10, 10);
         textView1.setText("foot1");
         headerAndFooterWrapper.addHeaderView(textView);
-        headerAndFooterWrapper.addFootView(new CodeRecyclerViewFooter(MainActivity.this));
+//        headerAndFooterWrapper.addFootView(new CodeRecyclerViewFooter(MainActivity.this));
     }
 }

@@ -665,7 +665,7 @@ public class XRefreshView extends LinearLayout {
             mFooterCallBack.onStateRefreshing();
             mPullLoading = true;
             if (mRefreshViewListener != null) {
-                mRefreshViewListener.onLoadMore(false);
+                mRefreshViewListener.onLoadMore(false,0);
             }
         }
     }
@@ -1287,7 +1287,7 @@ public class XRefreshView extends LinearLayout {
         /**
          * @param isSilence 是不是静默加载，静默加载即不显示footerview，自动监听滚动到底部并触发此回调
          */
-        void onLoadMore(boolean isSilence);
+        void onLoadMore(boolean isSilence,int index);
 
         /**
          * 用户手指释放的监听回调
@@ -1319,7 +1319,7 @@ public class XRefreshView extends LinearLayout {
         }
 
         @Override
-        public void onLoadMore(boolean isSilence) {
+        public void onLoadMore(boolean isSilence,int index) {
         }
 
         @Override

@@ -2,9 +2,12 @@ package com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.Switch;
 
 import com.andview.refreshview.XRefreshView;
@@ -28,16 +31,19 @@ public class CodeRecycleView extends GCLinearlayout {
     public static final int SUCCESS = 0;
     public static final int ERROR = 1;
     public static final int EMPTY = 2;
+    private static final int DEFAULT = -1;
+    private static final int WhitchPositionAutoShowLoadMoreFootView = 2;    //2代表倒数第几个
 
-    private int refreshState = -1;
+    private int refreshState = DEFAULT;
     private XRefreshView xRefreshView;
     private RecyclerView recycleView;
     RecyclerView.LayoutManager layoutManager;
     RecyclerView.Adapter adapter;
     private int pageSize = 10;
     private int pageIndex = 1;
-
+    private View footView;
     private XRefreshView.XRefreshViewListener xRefreshViewListener;
+    private int refreMode = BOTH;
 
     public CodeRecycleView(Context context) {
         super(context);
@@ -102,6 +108,7 @@ public class CodeRecycleView extends GCLinearlayout {
     }
 
     public void setRefreshMode(int mode) {
+        refreMode = mode;
         switch (mode) {
             case START:
                 xRefreshView.setPullRefreshEnable(true);
@@ -139,7 +146,7 @@ public class CodeRecycleView extends GCLinearlayout {
             }
 
             @Override
-            public void onLoadMore(boolean isSilence) {
+            public void onLoadMore(boolean isSilence, int index) {
                 needLoadMore();
 
             }
@@ -147,19 +154,35 @@ public class CodeRecycleView extends GCLinearlayout {
     }
 
     private void needLoadMore() {
-        if (adapter != null) {
-            int count = adapter.getItemCount();
-            if (adapter instanceof HeaderAndFooterWrapper) {
-                count = count - ((HeaderAndFooterWrapper) adapter).getHeadersCount() - ((HeaderAndFooterWrapper) adapter)
-                        .getFootersCount();
+        if (refreMode == START || refreMode == NONE || refreshState == END) return;
+        if (adapter != null && adapter instanceof HeaderAndFooterWrapper) {
+            if (footView == null) {
+                footView = new CodeRecyclerViewFooter(getmContext());
+                ((HeaderAndFooterWrapper) adapter).addFootView(footView);
+                adapter.notifyDataSetChanged();
+//                recycleView.scrollBy(0, 20);
             }
-            if (count % pageSize != 0) {
-                return;
+//            HeaderAndFooterWrapper tempada = ((HeaderAndFooterWrapper) adapter);
+//            int count = tempada.getItemCount() - tempada.getHeadersCount() - tempada.getFootersCount();
+//            if(count)
+//        }
+            int realyCount = 0;
+            if (adapter != null) {
+                int count = adapter.getItemCount();
+                if (adapter instanceof HeaderAndFooterWrapper) {
+                    count = count - ((HeaderAndFooterWrapper) adapter).getHeadersCount() - ((HeaderAndFooterWrapper) adapter)
+                            .getFootersCount();
+                }
+                realyCount = count;
+                if (count % pageSize != 0) {
+                    return;
+                }
             }
-        }
-        refreshState = END;
-        if (xRefreshViewListener != null) {
-            xRefreshViewListener.onLoadMore(true);
+            this.pageIndex = realyCount / pageSize + 1;
+            refreshState = END;
+            if (xRefreshViewListener != null) {
+                xRefreshViewListener.onLoadMore(true, this.pageIndex);
+            }
         }
     }
 
@@ -171,9 +194,8 @@ public class CodeRecycleView extends GCLinearlayout {
             xRefreshView.stopRefresh();
         } else if (refreshState == END) {
             xRefreshView.stopLoadMore();
-        } else {
-            return;
         }
+        refreshState = DEFAULT;
         switch (state) {
             case SUCCESS:
                 break;
@@ -215,7 +237,7 @@ public class CodeRecycleView extends GCLinearlayout {
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
 //                super.onScrolled(recyclerView, dx, dy);
 //                lastVisibleItem = layoutManager.findLastVisibleItemPosition();
-                if (!recyclerView.canScrollVertically(1)) {
+                if (dx > 0 && isScrollBottom()) {
                     needLoadMore();
                 }
             }
@@ -223,12 +245,42 @@ public class CodeRecycleView extends GCLinearlayout {
             public void onScrollStateChanged(RecyclerView recyclerView,
                                              int newState) {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    if (!recyclerView.canScrollVertically(1)) {
+                    if (isScrollBottom()) {
                         needLoadMore();
                     }
                 }
             }
         });
+    }
+
+    private boolean isScrollBottom() {
+        //recyclerView.canScrollVertically(1) //是否滑动到最底部
+        //recyclerView.canScrollVertically(-1)  //是否滑动到最顶部
+        int realyCount = 0;
+        if (adapter instanceof HeaderAndFooterWrapper) {
+            realyCount = adapter.getItemCount() - ((HeaderAndFooterWrapper) adapter).getHeadersCount() - (
+                    (HeaderAndFooterWrapper)
+                            adapter)
+                    .getFootersCount();
+        } else {
+            realyCount = adapter.getItemCount();
+        }
+        if (layoutManager instanceof LinearLayoutManager) {
+            return realyCount - WhitchPositionAutoShowLoadMoreFootView <= ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
+        } else if (layoutManager instanceof GridLayoutManager) {
+            return realyCount - WhitchPositionAutoShowLoadMoreFootView <= ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
+        } else if (layoutManager instanceof StaggeredGridLayoutManager) {
+            int[] into = new int[0];
+            ((StaggeredGridLayoutManager)
+                    layoutManager).findLastVisibleItemPositions(into);
+            if (into != null) {
+                return realyCount - WhitchPositionAutoShowLoadMoreFootView <= into[into.length - 1];
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
     }
 
     @Override
