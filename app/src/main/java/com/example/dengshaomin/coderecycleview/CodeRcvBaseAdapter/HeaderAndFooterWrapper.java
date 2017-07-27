@@ -23,6 +23,10 @@ public class HeaderAndFooterWrapper<T> extends RecyclerView.Adapter<RecyclerView
         mInnerAdapter = adapter;
     }
 
+    public void setmInnerAdapter(RecyclerView.Adapter mInnerAdapter) {
+        this.mInnerAdapter = mInnerAdapter;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (mHeaderViews.get(viewType) != null) {
@@ -47,7 +51,8 @@ public class HeaderAndFooterWrapper<T> extends RecyclerView.Adapter<RecyclerView
     }
 
     private int getRealItemCount() {
-        return mInnerAdapter.getItemCount();
+
+        return mInnerAdapter == null ? 0 : mInnerAdapter.getItemCount();
     }
 
 
@@ -87,6 +92,7 @@ public class HeaderAndFooterWrapper<T> extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
+        if (mInnerAdapter == null) return;
         mInnerAdapter.onViewAttachedToWindow(holder);
         int position = holder.getLayoutPosition();
         if (isHeaderViewPos(position) || isFooterViewPos(position)) {
@@ -111,6 +117,36 @@ public class HeaderAndFooterWrapper<T> extends RecyclerView.Adapter<RecyclerView
         mFootViews.put(mFootViews.size() + BASE_ITEM_TYPE_FOOTER, view);
     }
 
+    /**
+     * 倒叙从0开始
+     */
+    public void removeFootView(int index) {
+        mFootViews.remove(mFootViews.size() + BASE_ITEM_TYPE_FOOTER - index);
+        notifyDataSetChanged();
+    }
+
+    public void removeFootView(View view) {
+        if (mFootViews != null) {
+            for (int i = 0; i < mFootViews.size(); i++) {
+                if (mFootViews.valueAt(i).getId() == view.getId()) {
+                    mFootViews.removeAt(i);
+                    break;
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    public void removeFootView() {
+        mFootViews.clear();
+        notifyDataSetChanged();
+    }
+
+    public void removeHeaderView() {
+        mHeaderViews.clear();
+        notifyDataSetChanged();
+    }
+
     public int getHeadersCount() {
         return mHeaderViews.size();
     }
@@ -119,5 +155,14 @@ public class HeaderAndFooterWrapper<T> extends RecyclerView.Adapter<RecyclerView
         return mFootViews.size();
     }
 
-
+    public boolean hasFootView(CodeRecyclerViewFooter footView) {
+        if (mFootViews != null) {
+            for (int i = 0; i < mFootViews.size(); i++) {
+                if (mFootViews.valueAt(i).getId() == footView.getId()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

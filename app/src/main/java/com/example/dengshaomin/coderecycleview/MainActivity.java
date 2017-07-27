@@ -4,14 +4,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.andview.refreshview.XRefreshView;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecycleView;
-import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecyclerViewFooter;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CommonAdapter;
-import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.HeaderAndFooterWrapper;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.ViewHolder;
 
 import java.util.ArrayList;
@@ -22,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
     CodeRecycleView coderecycleView;
     CommonAdapter<String> commonAdapter;
     List<String> datas = new ArrayList<>();
-    HeaderAndFooterWrapper<String> headerAndFooterWrapper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +41,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
         }
-        headerAndFooterWrapper = new HeaderAndFooterWrapper<>(commonAdapter);
-        initHeaderFoot();
-        coderecycleView.setAdapter(headerAndFooterWrapper);
-
         coderecycleView.setXRefreshViewListener(new XRefreshView.SimpleXRefreshListener() {
             @Override
             public void onRefresh(boolean isPullDown) {
@@ -58,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         coderecycleView.refreshComplete(CodeRecycleView.SUCCESS);
                     }
-                }, 3000);
+                }, 2000);
             }
 
             @Override
@@ -73,23 +69,50 @@ public class MainActivity extends AppCompatActivity {
                         }
                         coderecycleView.refreshComplete(CodeRecycleView.SUCCESS);
                     }
-                }, 3000);
+                }, 2000);
             }
         });
+        coderecycleView.setAdapter(commonAdapter);
+        coderecycleView.addHeaderView(createHeaderView());
     }
 
-
-    private void initHeaderFoot() {
+    public View createHeaderView() {
         TextView textView = new TextView(this);
         textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        textView.setPadding(10, 10, 10, 10);
+        textView.setPadding(100, 100, 100, 100);
         textView.setText("header1");
-        TextView textView1 = new TextView(this);
-        textView1.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup
-                .LayoutParams.WRAP_CONTENT));
-        textView1.setPadding(10, 10, 10, 10);
-        textView1.setText("foot1");
-        headerAndFooterWrapper.addHeaderView(textView);
-//        headerAndFooterWrapper.addFootView(new CodeRecyclerViewFooter(MainActivity.this));
+        return textView;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.reset:
+                datas.clear();
+                coderecycleView.reset();
+                coderecycleView.addHeaderView(createHeaderView());
+                coderecycleView.setRefreshMode(CodeRecycleView.BOTH);
+                coderecycleView.setSpringBackMode(CodeRecycleView.BOTH);
+                break;
+            case R.id.all:
+                coderecycleView.setRefreshMode(CodeRecycleView.BOTH);
+                coderecycleView.setSpringBackMode(CodeRecycleView.BOTH);
+                coderecycleView.setAutoRefresh(true);
+                break;
+            case R.id.no_springback:
+                coderecycleView.setSpringBackMode(CodeRecycleView.NONE);
+                break;
+            case R.id.refresh_only:
+                coderecycleView.setRefreshMode(CodeRecycleView.START);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_view, menu);
+        return true;
     }
 }

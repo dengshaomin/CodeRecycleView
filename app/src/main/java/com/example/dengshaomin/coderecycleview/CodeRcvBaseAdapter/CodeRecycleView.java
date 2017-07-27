@@ -2,6 +2,7 @@ package com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.v7.view.menu.MenuAdapter;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -37,11 +38,12 @@ public class CodeRecycleView extends GCLinearlayout {
     private int refreshState = DEFAULT;
     private XRefreshView xRefreshView;
     private RecyclerView recycleView;
+    private HeaderAndFooterWrapper headerAndFooterWrapper;
     RecyclerView.LayoutManager layoutManager;
     RecyclerView.Adapter adapter;
     private int pageSize = 10;
     private int pageIndex = 1;
-    private View footView;
+    private CodeRecyclerViewFooter footView;
     private XRefreshView.XRefreshViewListener xRefreshViewListener;
     private int refreMode = BOTH;
 
@@ -62,9 +64,58 @@ public class CodeRecycleView extends GCLinearlayout {
         return R.layout.code_recycle_view;
     }
 
+    public void addHeaderView(View view) {
+        if (adapter == null) {
+            try {
+                throw new Exception("must set adapter first");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+        if (headerAndFooterWrapper == null) {
+            headerAndFooterWrapper = new HeaderAndFooterWrapper<>(adapter);
+        }
+        headerAndFooterWrapper.addHeaderView(view);
+        if (!(recycleView.getAdapter() instanceof HeaderAndFooterWrapper)) {
+            recycleView.setAdapter(headerAndFooterWrapper);
+        }
+    }
+
+    public void addFootView(View view) {
+        if (adapter == null) {
+            try {
+                throw new Exception("must set adapter first");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+        if (headerAndFooterWrapper == null) {
+            headerAndFooterWrapper = new HeaderAndFooterWrapper<>(adapter);
+        }
+        headerAndFooterWrapper.addFootView(view);
+        if (!(recycleView.getAdapter() instanceof HeaderAndFooterWrapper)) {
+            recycleView.setAdapter(headerAndFooterWrapper);
+        }
+    }
+
     public void setAdapter(RecyclerView.Adapter adapter) {
+        if (!(adapter instanceof RecyclerView.Adapter)) {
+            try {
+                throw new Exception("adapter must instanceof recycleview.adapter");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
         this.adapter = adapter;
-        recycleView.setAdapter(adapter);
+        if (headerAndFooterWrapper == null) {
+            headerAndFooterWrapper = new HeaderAndFooterWrapper(adapter);
+        } else {
+            headerAndFooterWrapper.setmInnerAdapter(adapter);
+        }
+        recycleView.setAdapter(headerAndFooterWrapper);
     }
 
     public void addItemDecoration(RecyclerView.ItemDecoration decor) {
@@ -72,7 +123,7 @@ public class CodeRecycleView extends GCLinearlayout {
     }
 
     public void setLayoutManager(RecyclerView.LayoutManager layout) {
-        this.layoutManager = layoutManager;
+        this.layoutManager = layout;
         recycleView.setLayoutManager(layout);
     }
 
@@ -102,7 +153,6 @@ public class CodeRecycleView extends GCLinearlayout {
             case NONE:
                 xRefreshView.enableRecyclerViewPullUp(false);
                 xRefreshView.enableRecyclerViewPullDown(false);
-
                 break;
         }
     }
@@ -111,18 +161,50 @@ public class CodeRecycleView extends GCLinearlayout {
         refreMode = mode;
         switch (mode) {
             case START:
+                if (headerAndFooterWrapper != null && footView != null && headerAndFooterWrapper.hasFootView
+                        (footView)) {
+                    headerAndFooterWrapper.removeFootView(footView);
+                }
                 xRefreshView.setPullRefreshEnable(true);
                 xRefreshView.setPullLoadEnable(false);
                 break;
             case END:
+                if (headerAndFooterWrapper == null) {
+                    headerAndFooterWrapper = new HeaderAndFooterWrapper(adapter);
+                }
+                if (footView == null) {
+                    footView = new CodeRecyclerViewFooter(getmContext());
+                    footView.setVisibility(adapter == null || adapter.getItemCount() == 0 ? GONE : VISIBLE);
+                    footView.setViewData(adapter != null && adapter.getItemCount() % pageSize == 0 ? false : true);
+                }
+                if (!headerAndFooterWrapper.hasFootView(footView)) {
+                    headerAndFooterWrapper.addFootView(footView);
+                    headerAndFooterWrapper.notifyDataSetChanged();
+                }
                 xRefreshView.setPullRefreshEnable(false);
                 xRefreshView.setPullLoadEnable(true);
                 break;
             case BOTH:
+                if (headerAndFooterWrapper == null) {
+                    headerAndFooterWrapper = new HeaderAndFooterWrapper(adapter);
+                }
+                if (footView == null) {
+                    footView = new CodeRecyclerViewFooter(getmContext());
+                    footView.setVisibility(adapter == null || adapter.getItemCount() == 0 ? GONE : VISIBLE);
+                    footView.setViewData(adapter != null && adapter.getItemCount() % pageSize == 0 ? false : true);
+                }
+                if (!headerAndFooterWrapper.hasFootView(footView)) {
+                    headerAndFooterWrapper.addFootView(footView);
+                    headerAndFooterWrapper.notifyDataSetChanged();
+                }
                 xRefreshView.setPullRefreshEnable(true);
                 xRefreshView.setPullLoadEnable(false);
                 break;
             case NONE:
+                if (headerAndFooterWrapper != null && footView != null && headerAndFooterWrapper.hasFootView
+                        (footView)) {
+                    headerAndFooterWrapper.removeFootView(footView);
+                }
                 xRefreshView.setPullRefreshEnable(false);
                 xRefreshView.setPullLoadEnable(false);
                 break;
@@ -155,39 +237,32 @@ public class CodeRecycleView extends GCLinearlayout {
 
     private void needLoadMore() {
         if (refreMode == START || refreMode == NONE || refreshState == END) return;
-        if (adapter != null && adapter instanceof HeaderAndFooterWrapper) {
-            if (footView == null) {
-                footView = new CodeRecyclerViewFooter(getmContext());
-                ((HeaderAndFooterWrapper) adapter).addFootView(footView);
-                adapter.notifyDataSetChanged();
-//                recycleView.scrollBy(0, 20);
-            }
-//            HeaderAndFooterWrapper tempada = ((HeaderAndFooterWrapper) adapter);
-//            int count = tempada.getItemCount() - tempada.getHeadersCount() - tempada.getFootersCount();
-//            if(count)
+//        if (footView == null) {
+//            footView = new CodeRecyclerViewFooter(getmContext());
 //        }
-            int realyCount = 0;
-            if (adapter != null) {
-                int count = adapter.getItemCount();
-                if (adapter instanceof HeaderAndFooterWrapper) {
-                    count = count - ((HeaderAndFooterWrapper) adapter).getHeadersCount() - ((HeaderAndFooterWrapper) adapter)
-                            .getFootersCount();
-                }
-                realyCount = count;
-                if (count % pageSize != 0) {
-                    return;
-                }
-            }
-            this.pageIndex = realyCount / pageSize + 1;
-            refreshState = END;
-            if (xRefreshViewListener != null) {
-                xRefreshViewListener.onLoadMore(true, this.pageIndex);
-            }
+//        if (headerAndFooterWrapper == null) {
+//            headerAndFooterWrapper = new HeaderAndFooterWrapper(adapter);
+//        }
+//        if (!headerAndFooterWrapper.hasFootView(footView)) {
+//            headerAndFooterWrapper.addFootView(footView);
+//            headerAndFooterWrapper.notifyDataSetChanged();
+//        }
+        if (footView != null) {
+            footView.setVisibility(adapter != null && adapter.getItemCount() != 0 ? VISIBLE : GONE);
+            footView.setViewData(adapter != null && adapter.getItemCount() % pageSize == 0 ? false : true);
+        }
+        if (adapter.getItemCount() % pageSize != 0) return;
+        this.pageIndex = adapter.getItemCount() / pageSize + 1;
+        refreshState = END;
+        if (xRefreshViewListener != null) {
+            xRefreshViewListener.onLoadMore(true, this.pageIndex);
         }
     }
 
     public void refreshComplete(int state) {
-        if (adapter != null) {
+        if (headerAndFooterWrapper != null) {
+            headerAndFooterWrapper.notifyDataSetChanged();
+        } else if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
         if (refreshState == START) {
@@ -196,6 +271,9 @@ public class CodeRecycleView extends GCLinearlayout {
             xRefreshView.stopLoadMore();
         }
         refreshState = DEFAULT;
+        if (footView != null) {
+            footView.setViewData(adapter.getItemCount() % pageSize != 0 ? true : false);
+        }
         switch (state) {
             case SUCCESS:
                 break;
@@ -217,6 +295,9 @@ public class CodeRecycleView extends GCLinearlayout {
         xRefreshView.enablePullUpWhenLoadCompleted(true);
         xRefreshView.setPullLoadEnable(false);
         xRefreshView.setAutoLoadMore(true);
+
+        setRefreshMode(BOTH);
+        setSpringBackMode(BOTH);
         //设置静默加载时提前加载的item个数
 //        xefreshView1.setPreLoadCount(4);
         //设置Recyclerview的滑动监听
@@ -253,18 +334,11 @@ public class CodeRecycleView extends GCLinearlayout {
         });
     }
 
+
     private boolean isScrollBottom() {
         //recyclerView.canScrollVertically(1) //是否滑动到最底部
         //recyclerView.canScrollVertically(-1)  //是否滑动到最顶部
-        int realyCount = 0;
-        if (adapter instanceof HeaderAndFooterWrapper) {
-            realyCount = adapter.getItemCount() - ((HeaderAndFooterWrapper) adapter).getHeadersCount() - (
-                    (HeaderAndFooterWrapper)
-                            adapter)
-                    .getFootersCount();
-        } else {
-            realyCount = adapter.getItemCount();
-        }
+        int realyCount = adapter.getItemCount();
         if (layoutManager instanceof LinearLayoutManager) {
             return realyCount - WhitchPositionAutoShowLoadMoreFootView <= ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
         } else if (layoutManager instanceof GridLayoutManager) {
@@ -308,4 +382,10 @@ public class CodeRecycleView extends GCLinearlayout {
 
     }
 
+    public void reset() {
+        if (headerAndFooterWrapper != null) {
+            headerAndFooterWrapper.removeFootView();
+            headerAndFooterWrapper.removeHeaderView();
+        }
+    }
 }

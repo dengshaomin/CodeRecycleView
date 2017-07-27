@@ -1,0 +1,32 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+    >
+
+    <item
+        android:id="@+id/reset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orderInCategory="100"
+        android:title="恢复"/>
+    <item
+        android:id="@+id/all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orderInCategory="100"
+        android:title="全部功能"/>
+
+    <item
+        android:id="@+id/no_springback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orderInCategory="100"
+        android:title="去除弹簧效果"/>
+
+    <item
+        android:id="@+id/refresh_only"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orderInCategory="100"
+        android:title="仅下拉刷新"/>
+</menu>
