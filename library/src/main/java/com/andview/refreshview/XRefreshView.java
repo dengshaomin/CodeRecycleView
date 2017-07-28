@@ -9,6 +9,7 @@ import android.support.annotation.LayoutRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -342,39 +343,43 @@ public class XRefreshView extends LinearLayout {
 //        super.onLayout(changed, l, t2, r, b);
 //        if(mHolder.mOffsetY!=0)return;
         LogUtils.d("onLayout mHolder.mOffsetY=" + mHolder.mOffsetY);
-        int childCount = getChildCount();
-        int top = getPaddingTop() + mHolder.mOffsetY;
-        int adHeight = 0;
-        for (int i = 0; i < childCount; i++) {
-            View child = getChildAt(i);
-            LayoutParams margins = (LayoutParams) child.getLayoutParams();
-            int topMargin = margins.topMargin;
-            int bottomMargin = margins.bottomMargin;
-            int leftMargin = margins.leftMargin;
-            int rightMargin = margins.rightMargin;
-            l = leftMargin + getPaddingLeft();
-            top += topMargin;
-            r = child.getMeasuredWidth();
-            if (child.getVisibility() != View.GONE) {
-                if (i == 0) {
-                    adHeight = child.getMeasuredHeight() - mHeaderViewHeight;
-                    child.layout(l, top - mHeaderViewHeight, l + r, top + adHeight);
-                    top += adHeight;
-                } else if (i == 1) {
-                    int childHeight = child.getMeasuredHeight() - adHeight;
-                    int bottom = childHeight + top;
-                    child.layout(l, top, l + r, bottom);
-                    top += childHeight + bottomMargin;
-                } else {
-                    if (needAddFooterView()) {
-                        int bottom = child.getMeasuredHeight() + top;
+        try {
+            int childCount = getChildCount();
+            int top = getPaddingTop() + mHolder.mOffsetY;
+            int adHeight = 0;
+            for (int i = 0; i < childCount; i++) {
+                View child = getChildAt(i);
+                LayoutParams margins = (LayoutParams) child.getLayoutParams();
+                int topMargin = margins.topMargin;
+                int bottomMargin = margins.bottomMargin;
+                int leftMargin = margins.leftMargin;
+                int rightMargin = margins.rightMargin;
+                l = leftMargin + getPaddingLeft();
+                top += topMargin;
+                r = child.getMeasuredWidth();
+                if (child.getVisibility() != View.GONE) {
+                    if (i == 0) {
+                        adHeight = child.getMeasuredHeight() - mHeaderViewHeight;
+                        child.layout(l, top - mHeaderViewHeight, l + r, top + adHeight);
+                        top += adHeight;
+                    } else if (i == 1) {
+                        int childHeight = child.getMeasuredHeight() - adHeight;
+                        int bottom = childHeight + top;
                         child.layout(l, top, l + r, bottom);
-                        top += child.getMeasuredHeight();
+                        top += childHeight + bottomMargin;
                     } else {
-                        hideUselessFooter();
+                        if (needAddFooterView()) {
+                            int bottom = child.getMeasuredHeight() + top;
+                            child.layout(l, top, l + r, bottom);
+                            top += child.getMeasuredHeight();
+                        } else {
+                            hideUselessFooter();
+                        }
                     }
                 }
             }
+        } catch (Exception ex) {
+            Log.e(getClass().getName(), ex.getCause() + "");
         }
     }
 
@@ -665,7 +670,7 @@ public class XRefreshView extends LinearLayout {
             mFooterCallBack.onStateRefreshing();
             mPullLoading = true;
             if (mRefreshViewListener != null) {
-                mRefreshViewListener.onLoadMore(false,0);
+                mRefreshViewListener.onLoadMore(false, 0);
             }
         }
     }
@@ -1287,7 +1292,7 @@ public class XRefreshView extends LinearLayout {
         /**
          * @param isSilence 是不是静默加载，静默加载即不显示footerview，自动监听滚动到底部并触发此回调
          */
-        void onLoadMore(boolean isSilence,int index);
+        void onLoadMore(boolean isSilence, int index);
 
         /**
          * 用户手指释放的监听回调
@@ -1319,7 +1324,7 @@ public class XRefreshView extends LinearLayout {
         }
 
         @Override
-        public void onLoadMore(boolean isSilence,int index) {
+        public void onLoadMore(boolean isSilence, int index) {
         }
 
         @Override

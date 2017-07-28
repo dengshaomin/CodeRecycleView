@@ -4,15 +4,18 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andview.refreshview.XRefreshView;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecycleView;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CommonAdapter;
+import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.MultiItemTypeAdapter;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.ViewHolder;
 
 import java.util.ArrayList;
@@ -74,6 +77,19 @@ public class MainActivity extends AppCompatActivity {
         });
         coderecycleView.setAdapter(commonAdapter);
         coderecycleView.addHeaderView(createHeaderView());
+        coderecycleView.addFootView(createHeaderView(), true);
+        coderecycleView.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
+                Toast.makeText(MainActivity.this, position + "", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
+                Toast.makeText(MainActivity.this, position + "", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
     }
 
     public View createHeaderView() {

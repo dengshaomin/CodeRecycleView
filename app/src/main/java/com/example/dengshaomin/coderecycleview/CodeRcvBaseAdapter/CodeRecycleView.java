@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.Switch;
 
@@ -17,6 +18,8 @@ import com.example.dengshaomin.coderecycleview.R;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.net.ssl.HandshakeCompletedEvent;
 
 /**
  * Created by dengshaomin on 2017/7/24.
@@ -70,6 +73,7 @@ public class CodeRecycleView extends GCLinearlayout {
                 throw new Exception("must set adapter first");
             } catch (Exception e) {
                 e.printStackTrace();
+                Log.e(this.getClass().getName(), "must set adapter first");
             }
             return;
         }
@@ -82,21 +86,71 @@ public class CodeRecycleView extends GCLinearlayout {
         }
     }
 
-    public void addFootView(View view) {
+    public void setOnItemClickListener(final MultiItemTypeAdapter.OnItemClickListener onItemClickListener) {
+        if (!(adapter instanceof RecyclerView.Adapter)) {
+            try {
+                throw new Exception("adapter must instanceof recycleview.adapter");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
         if (adapter == null) {
             try {
                 throw new Exception("must set adapter first");
             } catch (Exception e) {
                 e.printStackTrace();
+                Log.e(this.getClass().getName(), "must set adapter first");
+            }
+            return;
+        }
+        if (!(adapter instanceof MultiItemTypeAdapter)) {
+            try {
+                throw new Exception("adapter must instanceof MultiItemTypeAdapter,if not,set click event in yourself " +
+                        "adapter");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        ((MultiItemTypeAdapter) adapter).setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
+                if (onItemClickListener != null) {
+                    onItemClickListener.onItemClick(view, holder, position - headerAndFooterWrapper.getHeadersCount());
+                }
+            }
+
+            @Override
+            public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
+                if (onItemClickListener != null) {
+                    onItemClickListener.onItemLongClick(view, holder, position - headerAndFooterWrapper.getHeadersCount());
+                }
+                return onItemClickListener == null ? false : true;
+            }
+        });
+    }
+
+    /**
+     * beforeloadmore为true新增footview在加载更多footview之前
+     */
+    public void addFootView(View view, boolean beforeLoadMore) {
+        if (adapter == null) {
+            try {
+                throw new Exception("must set adapter first");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(this.getClass().getName(), "must set adapter first");
             }
             return;
         }
         if (headerAndFooterWrapper == null) {
             headerAndFooterWrapper = new HeaderAndFooterWrapper<>(adapter);
         }
-        headerAndFooterWrapper.addFootView(view);
-        if (!(recycleView.getAdapter() instanceof HeaderAndFooterWrapper)) {
-            recycleView.setAdapter(headerAndFooterWrapper);
+
+        if (footView != null && headerAndFooterWrapper.hasFootView(footView)) {
+            headerAndFooterWrapper.addFootView(view, beforeLoadMore);
+        } else {
+            headerAndFooterWrapper.addFootView(view, false);
         }
     }
 
@@ -174,7 +228,7 @@ public class CodeRecycleView extends GCLinearlayout {
                 }
                 if (footView == null) {
                     footView = new CodeRecyclerViewFooter(getmContext());
-                    footView.setVisibility(adapter == null || adapter.getItemCount() == 0 ? GONE : VISIBLE);
+//                    footView.setVisibility(adapter == null || adapter.getItemCount() == 0 ? GONE : VISIBLE);
                     footView.setViewData(adapter != null && adapter.getItemCount() % pageSize == 0 ? false : true);
                 }
                 if (!headerAndFooterWrapper.hasFootView(footView)) {
@@ -190,7 +244,7 @@ public class CodeRecycleView extends GCLinearlayout {
                 }
                 if (footView == null) {
                     footView = new CodeRecyclerViewFooter(getmContext());
-                    footView.setVisibility(adapter == null || adapter.getItemCount() == 0 ? GONE : VISIBLE);
+//                    footView.setVisibility(adapter == null || adapter.getItemCount() == 0 ? GONE : VISIBLE);
                     footView.setViewData(adapter != null && adapter.getItemCount() % pageSize == 0 ? false : true);
                 }
                 if (!headerAndFooterWrapper.hasFootView(footView)) {
@@ -247,11 +301,11 @@ public class CodeRecycleView extends GCLinearlayout {
 //            headerAndFooterWrapper.addFootView(footView);
 //            headerAndFooterWrapper.notifyDataSetChanged();
 //        }
+        if (adapter.getItemCount() == 0 || adapter.getItemCount() % pageSize != 0) return;
         if (footView != null) {
-            footView.setVisibility(adapter != null && adapter.getItemCount() != 0 ? VISIBLE : GONE);
+//            footView.setVisibility(adapter != null && adapter.getItemCount() != 0 ? VISIBLE : GONE);
             footView.setViewData(adapter != null && adapter.getItemCount() % pageSize == 0 ? false : true);
         }
-        if (adapter.getItemCount() % pageSize != 0) return;
         this.pageIndex = adapter.getItemCount() / pageSize + 1;
         refreshState = END;
         if (xRefreshViewListener != null) {

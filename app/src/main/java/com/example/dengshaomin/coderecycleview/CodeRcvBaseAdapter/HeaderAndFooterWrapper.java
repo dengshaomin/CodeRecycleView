@@ -118,6 +118,21 @@ public class HeaderAndFooterWrapper<T> extends RecyclerView.Adapter<RecyclerView
     }
 
     /**
+     * beforeloadmore为true新增footview在加载更多footview之前
+     */
+    public void addFootView(View view, boolean beforeLoadMore) {
+        if (beforeLoadMore) {
+            if (mFootViews != null && mFootViews.size() > 0) {
+                View temp = mFootViews.get(mFootViews.size() - 1 + BASE_ITEM_TYPE_FOOTER);
+                mFootViews.put(mFootViews.size() + BASE_ITEM_TYPE_FOOTER, view);
+                mFootViews.put(mFootViews.size() + BASE_ITEM_TYPE_FOOTER + 1, temp);
+            }
+        } else {
+            addFootView(view);
+        }
+    }
+
+    /**
      * 倒叙从0开始
      */
     public void removeFootView(int index) {
