@@ -16,14 +16,17 @@ import com.alibaba.android.vlayout.layout.DefaultLayoutHelper;
 import com.alibaba.android.vlayout.layout.FixLayoutHelper;
 import com.alibaba.android.vlayout.layout.GridLayoutHelper;
 import com.alibaba.android.vlayout.layout.ScrollFixLayoutHelper;
+import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecycleView;
+import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecyclerViewFooter;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CommonAdapter;
+import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.HeaderAndFooterWrapper;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class WithValayoutActivity extends AppCompatActivity {
-    RecyclerView recyclerView;
+    CodeRecycleView recyclerView;
     CommonAdapter<String> commonAdapter;
     List<String> datas = new ArrayList<>();
     private VirtualLayoutManager layoutManager;
@@ -32,7 +35,7 @@ public class WithValayoutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_with_valayout);
-        recyclerView = (RecyclerView) findViewById(R.id.coderecycleView);
+        recyclerView = (CodeRecycleView) findViewById(R.id.coderecycleView);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST, getResources
                 ().getColor(R.color.cardview_dark_background), 1));
         layoutManager = new VirtualLayoutManager(this);
@@ -52,50 +55,9 @@ public class WithValayoutActivity extends AppCompatActivity {
 
         layoutManager.setLayoutHelpers(helpers);
 
-        recyclerView.setAdapter(
-                new VirtualLayoutAdapter(layoutManager) {
-                    @Override
-                    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                        return new MainViewHolder(new TextView(WithValayoutActivity.this));
-                    }
-
-                    @Override
-                    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-                        VirtualLayoutManager.LayoutParams layoutParams = new VirtualLayoutManager.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT, 300);
-                        holder.itemView.setLayoutParams(layoutParams);
-
-                        ((TextView) holder.itemView).setText(Integer.toString(position));
-
-                        if (position == 7) {
-                            layoutParams.height = 60;
-                            layoutParams.width = 60;
-                        } else if (position > 35) {
-                            layoutParams.height = 200 + (position - 30) * 100;
-                        }
-
-                        if (position > 35) {
-                            holder.itemView.setBackgroundColor(0x66cc0000 + (position - 30) * 128);
-                        } else if (position % 2 == 0) {
-                            holder.itemView.setBackgroundColor(0xaa00ff00);
-                        } else {
-                            holder.itemView.setBackgroundColor(0xccff00ff);
-                        }
-                    }
-
-                    @Override
-                    public int getItemCount() {
-                        List<LayoutHelper> helpers = getLayoutHelpers();
-                        if (helpers == null) {
-                            return 0;
-                        }
-                        int count = 0;
-                        for (int i = 0, size = helpers.size(); i < size; i++) {
-                            count += helpers.get(i).getItemCount();
-                        }
-                        return count;
-                    }
-                });
+        HeaderAndFooterWrapper headerAndFooterWrapper = new HeaderAndFooterWrapper(getAdapter());
+        headerAndFooterWrapper.addFootView(new CodeRecyclerViewFooter(this));
+        recyclerView.setAdapter(headerAndFooterWrapper);
 //        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
 //            @Override
 //            public void run() {
@@ -106,6 +68,51 @@ public class WithValayoutActivity extends AppCompatActivity {
 
     }
 
+    private VirtualLayoutAdapter getAdapter() {
+        return new VirtualLayoutAdapter(layoutManager) {
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                return new MainViewHolder(new TextView(WithValayoutActivity.this));
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+                VirtualLayoutManager.LayoutParams layoutParams = new VirtualLayoutManager.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 300);
+                holder.itemView.setLayoutParams(layoutParams);
+
+                ((TextView) holder.itemView).setText(Integer.toString(position));
+
+                if (position == 7) {
+                    layoutParams.height = 60;
+                    layoutParams.width = 60;
+                } else if (position > 35) {
+                    layoutParams.height = 200 + (position - 30) * 100;
+                }
+
+                if (position > 35) {
+                    holder.itemView.setBackgroundColor(0x66cc0000 + (position - 30) * 128);
+                } else if (position % 2 == 0) {
+                    holder.itemView.setBackgroundColor(0xaa00ff00);
+                } else {
+                    holder.itemView.setBackgroundColor(0xccff00ff);
+                }
+            }
+
+            @Override
+            public int getItemCount() {
+                List<LayoutHelper> helpers = getLayoutHelpers();
+                if (helpers == null) {
+                    return 0;
+                }
+                int count = 0;
+                for (int i = 0, size = helpers.size(); i < size; i++) {
+                    count += helpers.get(i).getItemCount();
+                }
+                return count;
+            }
+        };
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
