@@ -20,6 +20,7 @@ import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecycleVie
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecyclerViewFooter;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CommonAdapter;
 import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.HeaderAndFooterWrapper;
+import com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.MultiItemTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -58,13 +59,17 @@ public class WithValayoutActivity extends AppCompatActivity {
         HeaderAndFooterWrapper headerAndFooterWrapper = new HeaderAndFooterWrapper(getAdapter());
         headerAndFooterWrapper.addFootView(new CodeRecyclerViewFooter(this));
         recyclerView.setAdapter(headerAndFooterWrapper);
-//        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                recyclerView.scrollToPosition(7);
-//                recyclerView.getAdapter().notifyDataSetChanged();
-//            }
-//        }, 6000);
+        recyclerView.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
+
+            }
+
+            @Override
+            public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
+                return false;
+            }
+        });
 
     }
 
@@ -110,6 +115,11 @@ public class WithValayoutActivity extends AppCompatActivity {
                     count += helpers.get(i).getItemCount();
                 }
                 return count;
+            }
+
+            @Override
+            public int getItemViewType(int position) {
+                return super.getItemViewType(position);
             }
         };
     }
