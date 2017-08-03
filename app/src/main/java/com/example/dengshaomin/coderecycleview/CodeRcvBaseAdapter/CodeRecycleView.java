@@ -111,23 +111,24 @@ public class CodeRecycleView extends GCLinearlayout {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        ((MultiItemTypeAdapter) adapter).setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
-                if (onItemClickListener != null) {
-                    onItemClickListener.onItemClick(view, holder, position - headerAndFooterWrapper.getHeadersCount());
+        } else {
+            ((MultiItemTypeAdapter) adapter).setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, RecyclerView.ViewHolder holder, int position) {
+                    if (onItemClickListener != null) {
+                        onItemClickListener.onItemClick(view, holder, position - headerAndFooterWrapper.getHeadersCount());
+                    }
                 }
-            }
 
-            @Override
-            public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
-                if (onItemClickListener != null) {
-                    onItemClickListener.onItemLongClick(view, holder, position - headerAndFooterWrapper.getHeadersCount());
+                @Override
+                public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, int position) {
+                    if (onItemClickListener != null) {
+                        onItemClickListener.onItemLongClick(view, holder, position - headerAndFooterWrapper.getHeadersCount());
+                    }
+                    return onItemClickListener == null ? false : true;
                 }
-                return onItemClickListener == null ? false : true;
-            }
-        });
+            });
+        }
     }
 
     /**

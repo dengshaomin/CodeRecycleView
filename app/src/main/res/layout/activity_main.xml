@@ -5,10 +5,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.example.dengshaomin.coderecycleview.MainActivity">
 
-    <com.example.dengshaomin.coderecycleview.CodeRcvBaseAdapter.CodeRecycleView
-        android:id="@+id/coderecycleView"
+    <TextView
+        android:id="@+id/normal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:background="@color/colorAccent"
+        android:gravity="center"
+        android:padding="20dp"
+        android:text="Normal"/>
+
+    <TextView
+        android:id="@+id/withVaLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:background="@color/colorAccent"
+        android:gravity="center"
+        android:padding="20dp"
+        android:text="WithVaLayout"/>
 </LinearLayout>
